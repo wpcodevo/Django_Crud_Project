@@ -36,7 +36,7 @@ class Notes(APIView):
             return Response({"status": "fail", "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class NoteDetial(APIView):
+class NoteDetail(APIView):
     def get_note(self, pk):
         try:
             return NoteModel.objects.get(pk=pk)

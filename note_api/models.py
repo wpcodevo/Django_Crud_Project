@@ -12,7 +12,7 @@ class NoteModel(models.Model):
 
     class Meta:
         db_table = "notes"
-        ordering = ['createdAt']
+        ordering = ['-createdAt']
 
         def __str__(self) -> str:
             return self.title
