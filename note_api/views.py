@@ -1,13 +1,15 @@
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from note_api.models import NoteModel
 from note_api.serializers import NoteSerializer
 import math
 from datetime import datetime
 
 
-class Notes(APIView):
+class Notes(generics.GenericAPIView):
+    serializer_class = NoteSerializer
+    queryset = NoteModel.objects.all()
+
     def get(self, request):
         page_num = int(request.GET.get("page", 1))
         limit_num = int(request.GET.get("limit", 10))
@@ -18,7 +20,7 @@ class Notes(APIView):
         total_notes = notes.count()
         if search_param:
             notes = notes.filter(title__icontains=search_param)
-        serializer = NoteSerializer(notes[start_num:end_num], many=True)
+        serializer = self.serializer_class(notes[start_num:end_num], many=True)
         return Response({
             "status": "success",
             "total": total_notes,
@@ -28,7 +30,7 @@ class Notes(APIView):
         })
 
     def post(self, request):
-        serializer = NoteSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"status": "success", "note": serializer.data}, status=status.HTTP_201_CREATED)
@@ -36,7 +38,10 @@ class Notes(APIView):
             return Response({"status": "fail", "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class NoteDetail(APIView):
+class NoteDetail(generics.GenericAPIView):
+    queryset = NoteModel.objects.all()
+    serializer_class = NoteSerializer
+
     def get_note(self, pk):
         try:
             return NoteModel.objects.get(pk=pk)
@@ -48,7 +53,7 @@ class NoteDetail(APIView):
         if note == None:
             return Response({"status": "fail", "message": f"Note with Id: {pk} not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = NoteSerializer(note)
+        serializer = self.serializer_class(note)
         return Response({"status": "success", "note": serializer.data})
 
     def patch(self, request, pk):
@@ -56,7 +61,8 @@ class NoteDetail(APIView):
         if note == None:
             return Response({"status": "fail", "message": f"Note with Id: {pk} not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = NoteSerializer(note, data=request.data, partial=True)
+        serializer = self.serializer_class(
+            note, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.validated_data['updatedAt'] = datetime.now()
             serializer.save()
