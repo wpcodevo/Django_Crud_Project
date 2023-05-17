@@ -33,7 +33,7 @@ class Notes(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"status": "success", "note": serializer.data}, status=status.HTTP_201_CREATED)
+            return Response({"status": "success", "data": {"note": serializer.data}}, status=status.HTTP_201_CREATED)
         else:
             return Response({"status": "fail", "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -54,7 +54,7 @@ class NoteDetail(generics.GenericAPIView):
             return Response({"status": "fail", "message": f"Note with Id: {pk} not found"}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.serializer_class(note)
-        return Response({"status": "success", "note": serializer.data})
+        return Response({"status": "success", "data": {"note": serializer.data}})
 
     def patch(self, request, pk):
         note = self.get_note(pk)
@@ -66,7 +66,7 @@ class NoteDetail(generics.GenericAPIView):
         if serializer.is_valid():
             serializer.validated_data['updatedAt'] = datetime.now()
             serializer.save()
-            return Response({"status": "success", "note": serializer.data})
+            return Response({"status": "success", "data": {"note": serializer.data}})
         return Response({"status": "fail", "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
